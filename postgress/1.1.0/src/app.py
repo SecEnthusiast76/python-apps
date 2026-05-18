@@ -30,18 +30,16 @@ class PostgreSQL(AppBase):
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(query)
                 try:
-                    return {"result": loads(dumps([dict(row) for row in cur.fetchall() if row]), default=self._type_handler)}
+                    return {"result": loads(dumps([dict(row) for row in cur.fetchall() if row], default=self._type_handler))}
                 except ProgrammingError:
                     return {"message": "Query executed successfully, no data returned."}
 
     @staticmethod
     def _type_handler(value):
-        if isinstance(value, date):
-            return f"{value.year}-{value.month}-{value.day}"
-        elif isinstance(value, datetime):
-            return f"{value.year}-{value.month}-{value.day} {value.hour}:{value.minute}:{value.second}"
+        if isinstance(value, (date, datetime)):
+            return f"{value.isoformat()}"
         
-        raise TypeError("Unknown Type")
+        raise TypeError(f"Unknown Type: {type(value)}")
 
 
 if __name__ == "__main__":
