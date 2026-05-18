@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from json import dumps, loads
 
 from psycopg2 import connect, ProgrammingError
@@ -29,9 +30,18 @@ class PostgreSQL(AppBase):
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(query)
                 try:
-                    return {"result": [row for row in loads(dumps(cur.fetchall())) if row]}
+                    return {"result": loads(dumps(cur.fetchall()), default=self._type_handler)}
                 except ProgrammingError:
                     return {"message": "Query executed successfully, no data returned."}
+
+    @staticmethod
+    def _type_handler(value):
+        if isinstance(value, date):
+            return f"{value.year}-{value.month}-{value.day}"
+        elif isinstance(value, datetime):
+            return f"{value.year}-{value.month}-{value.day} {value.hour}:{value.minute}:{value.second}"
+        
+        raise TypeError("Unknown Type")
 
 
 if __name__ == "__main__":
