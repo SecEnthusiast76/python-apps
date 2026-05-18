@@ -30,7 +30,7 @@ class PostgreSQL(AppBase):
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(query)
                 try:
-                    return {"result": loads(dumps(cur.fetchall()), default=self._type_handler)}
+                    return {"result": loads(dumps([dict(row) for row in cur.fetchall() if row]), default=self._type_handler)}
                 except ProgrammingError:
                     return {"message": "Query executed successfully, no data returned."}
 
