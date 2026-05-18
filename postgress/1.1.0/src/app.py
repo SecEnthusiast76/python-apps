@@ -1,4 +1,4 @@
-from json import dumps
+from json import dumps, loads
 
 from psycopg2 import connect, ProgrammingError
 from psycopg2.extras import RealDictCursor
@@ -29,7 +29,7 @@ class PostgreSQL(AppBase):
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(query)
                 try:
-                    return dumps({"result": [dict(row) for row in cur.fetchall() if row]})
+                    return {"result": [row for row in loads(dumps(cur.fetchall())) if row]}
                 except ProgrammingError:
                     return {"message": "Query executed successfully, no data returned."}
 
